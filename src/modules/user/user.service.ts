@@ -9,8 +9,9 @@ export const createUser = async (data: IUser) => {
     throw new AppError("User already exists", 400);
   }
 
-  return await User.create(data);
+  return await User.create({ ...data, role: "user" });
 };
+
 export const findUserByEmail = async (email: string) => {
   const user = await User.findOne({ email });
   return user;

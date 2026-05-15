@@ -6,10 +6,6 @@ const app = express();
 
 loadSetup(app);
 
-app.get("/health", () => {
-  console.log("server running perfectly");
-});
-
 app.listen(env.PORT, () => {
   console.log(`Server running on PORT ${env.PORT}`);
 });

@@ -1,99 +1,86 @@
+import { ca } from "zod/locales";
 import { generateOTP, hashPassword, sendEmail } from "../../utils";
 import AppError from "../../utils/AppError";
-import { IRegisterRequest, EnsureAuthSessionInput } from "../auth";
+import {
+  EnsureAuthSessionInput,
+  IForgotPasswordOtpRequest,
+  IRegisterOtpRequest,
+  SendOtpInput,
+} from "../auth";
 import { OtpPurpose, VerifyOTPInput } from "./otp.types";
-import { createUser, IUser } from "../user";
 import OTPAuthSessionModel from "./otpAuthSession.model";
 
-export const sendOTP = async (
-  data: IRegisterRequest & { purpose: OtpPurpose },
-) => {
-  const { password, ...rest } = data;
+export const sendOTP = async (data: SendOtpInput) => {
   const otp = generateOTP();
-  const hashedPassword = await hashPassword(password);
 
-  await upsertOTPAuthSession({
-    ...rest,
-    hashedPassword,
+  let hashedPassword: string | undefined;
+
+  if (data.purpose === "register") {
+    hashedPassword = await hashPassword(data.password);
+  }
+
+  const sessionPayload: EnsureAuthSessionInput = {
+    email: data.email,
+    purpose: data.purpose,
     otp,
-  });
+    ...(data.purpose === "register"
+      ? {
+          firstName: data.firstName,
+          lastName: data.lastName,
+          hashedPassword,
+        }
+      : {}),
+  };
+
+  await upsertOTPAuthSession(sessionPayload);
 
   const mailOptions = {
     from: "UIUX Club <hr@mentoons.com>",
     to: data.email,
     subject: "OTP Verification Code",
-    text: `Hello ${data.firstName},
+    text: `Hello ${data.purpose === "register" ? data.firstName : "User"},
 
-    Your OTP for ${data.purpose} is: ${otp}
+          Your OTP for ${data.purpose} is: ${otp}
 
-    This OTP is valid for 5 minutes.
+          This OTP is valid for 5 minutes.
 
-    If you did not request this, ignore this email.
-
-    - UIUX Club Team`,
+          - UIUX Club Team`,
   };
 
   try {
-    const result = await sendEmail(mailOptions);
-    console.log("result :", result);
+    await sendEmail(mailOptions);
   } catch (err) {
-    console.log(err);
-    await deleteOTPAuthSession({ email: data.email, purpose: data.purpose });
+    await deleteOTPAuthSession({
+      email: data.email,
+      purpose: data.purpose,
+    });
+
     throw new AppError("Failed to send OTP. Please try again.", 500);
   }
 
-  return {
-    email: data.email,
-  };
+  return { email: data.email };
 };
 
 export const verifyOTP = async (data: VerifyOTPInput) => {
-  console.log(data);
   const { otp, email, purpose } = data;
-  if (!otp) {
-    throw new AppError("Please enter a valid OTP", 400);
-  }
 
-  console.log("otp is there");
+  if (!otp) throw new AppError("Please enter OTP", 400);
+
   if (!/^\d{6}$/.test(otp)) {
     throw new AppError("Invalid OTP format", 400);
   }
 
   const session = await OTPAuthSessionModel.findOne({ email, purpose });
-  if (!session) {
-    throw new AppError("Invalid OTP or email. Please try again.", 400);
-  }
 
-  console.log("otp not found");
+  if (!session) throw new AppError("Invalid OTP or email", 400);
 
-  if (session.otp != otp) {
-    throw new AppError("Invalid OTP", 400);
-  }
+  if (session.otp !== otp) throw new AppError("Incorrect OTP", 400);
 
-  console.log("otp is not matching");
   if (session.expiresAt < new Date()) {
     throw new AppError("OTP expired", 400);
   }
 
-  console.log("expired otp");
-
-  console.log("creating user");
-  const userData: IUser = {
-    email: session.email,
-    firstName: session.firstName,
-    lastName: session.lastName,
-    password: session.password,
-  };
-
-  const user = await createUser(userData);
-  console.log("user created");
-
-  await deleteOTPAuthSession({ email, purpose });
-
-  return {
-    message: "User created successfully",
-    user,
-  };
+  return { session };
 };
 
 export const upsertOTPAuthSession = async (data: EnsureAuthSessionInput) => {
@@ -112,21 +99,26 @@ export const upsertOTPAuthSession = async (data: EnsureAuthSessionInput) => {
     throw new AppError("Please wait 60 seconds before resending OTP", 429);
   }
 
+  const updatePayload: any = {
+    email: data.email,
+    purpose: data.purpose,
+    otp: data.otp,
+    expiresAt: new Date(Date.now() + 5 * 60 * 1000),
+    lastSentAt: now,
+  };
+
+  if (data.purpose === "register") {
+    if (data.firstName) updatePayload.firstName = data.firstName;
+    if (data.lastName) updatePayload.lastName = data.lastName;
+    if (data.hashedPassword) updatePayload.password = data.hashedPassword;
+  }
+
   const authSession = await OTPAuthSessionModel.findOneAndUpdate(
     {
       email: data.email,
       purpose: data.purpose,
     },
-    {
-      email: data.email,
-      firstName: data.firstName,
-      lastName: data.lastName,
-      ...(data.hashedPassword && { password: data.hashedPassword }),
-      otp: data.otp,
-      purpose: data.purpose,
-      expiresAt: new Date(Date.now() + 5 * 60 * 1000),
-      lastSentAt: now,
-    },
+    updatePayload,
     {
       upsert: true,
       new: true,
@@ -151,4 +143,35 @@ export const deleteOTPAuthSession = async ({
   } catch (error) {
     console.log("auth session delete error :", error);
   }
+};
+
+export const OTPResend = async (email: string, purpose: OtpPurpose) => {
+  const otp = generateOTP();
+
+  console.log("Resending OTP:", otp);
+
+  await OTPAuthSessionModel.findOneAndUpdate(
+    { email, purpose },
+    {
+      otp,
+      expiresAt: new Date(Date.now() + 5 * 60 * 1000),
+    },
+  );
+  console.log("OTP session updated with new OTP");
+
+  try {
+    await sendEmail({
+      from: "UIUX Club <hr@mentoons.com>",
+      to: email,
+      subject: "OTP Resend",
+      text: `Your new OTP is ${otp}`,
+    });
+  } catch (err) {
+    console.log("Error sending OTP resend email:", err);
+    throw new AppError("Failed to resend OTP. Please try again.", 500);
+  }
+
+  console.log("OTP resend email sent");
+
+  return { email };
 };

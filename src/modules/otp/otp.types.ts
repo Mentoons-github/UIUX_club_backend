@@ -13,5 +13,5 @@ export interface IOtp {
 export type VerifyOTPInput = {
   otp: string;
   email: string;
-  purpose: "register" | "login" | "reset-password";
+  purpose: OtpPurpose;
 };
