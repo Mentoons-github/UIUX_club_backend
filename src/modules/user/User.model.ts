@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 
-const UserSchema = new mongoose.Schema(
+const userSchema = new mongoose.Schema(
   {
     firstName: {
       type: String,
@@ -21,10 +21,16 @@ const UserSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    bio: {
+      type: String,
+    },
     phone: {
       type: String,
-      required: false,
-      unique: true,
+    },
+    role: {
+      type: String,
+      enum: ["admin", "user", "partner"],
+      default: "user",
     },
     profilePicture: {
       type: String,
@@ -34,12 +40,60 @@ const UserSchema = new mongoose.Schema(
       type: String,
       required: false,
     },
+    skills: {
+      type: [String],
+      default: [],
+    },
+    location: {
+      type: String,
+    },
+    followersCount: {
+      type: Number,
+      default: 0,
+    },
+    followingCount: {
+      type: Number,
+      default: 0,
+    },
+    postsCount: {
+      type: Number,
+      default: 0,
+    },
+    isPrivate: {
+      type: Boolean,
+      default: false,
+    },
+    blockedUsers: {
+      type: [
+        {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "User",
+        },
+      ],
+      default: [],
+    },
+    blockedEmployers: {
+      type: [
+        {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "Employer",
+        },
+      ],
+      default: [],
+    },
   },
   {
     timestamps: true,
   },
 );
 
-const User = mongoose.model("User", UserSchema);
+userSchema.methods.toSafeObject = function () {
+  const userObject = this.toObject();
+  delete userObject.password;
+  delete userObject.__v;
+  return userObject;
+};
+
+const User = mongoose.model("User", userSchema);
 
 export default User;

@@ -1,0 +1,30 @@
+export interface IEmployer {
+  firstName: string;
+  lastName: string;
+  age: number;
+  designation: string;
+  designationOther?: string;
+  companyName: string;
+  industry: string;
+  companySize: string;
+  location: string;
+  turnover?: string;
+  perks: string[];
+  companyAbout?: string;
+  mobile: string;
+  whatsapp: string;
+  website: string;
+  jobTitle: string;
+  jobType: string;
+  workLocation: string;
+  expLevel: string;
+  jobDescription: string;
+  workEmail: string;
+  password: string;
+  role: "employer";
+  isVerified: boolean;
+  isBlocked: boolean;
+  blockedUsers: string[];
+  refreshToken?: string;
+  comparePassword(password: string): Promise<boolean>;
+}

@@ -1,4 +1,8 @@
-export type OtpPurpose = "register" | "login" | "reset-password";
+export type OtpPurpose =
+  | "register"
+  | "reset-password"
+  | "login"
+  | "employer-register";
 
 export interface IOtp {
   email: string;
@@ -13,5 +17,5 @@ export interface IOtp {
 export type VerifyOTPInput = {
   otp: string;
   email: string;
-  purpose: "register" | "login" | "reset-password";
+  purpose: OtpPurpose;
 };

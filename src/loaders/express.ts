@@ -4,13 +4,17 @@ import express from "express";
 import helmet from "helmet";
 import { env } from "../config/env";
 import morgan from "morgan";
+import cookieParser from "cookie-parser";
 
 export const setUpMiddleware = (app: Application) => {
   app.use(
     cors({
-      origin: "*",
+      origin: env.CLIENT_URL,
+      credentials: true,
     }),
   );
+
+  app.use(cookieParser());
 
   if (env.NODE_ENV === "production") {
     app.use(helmet());
