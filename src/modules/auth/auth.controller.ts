@@ -11,6 +11,7 @@ import AppError from "../../utils/AppError";
 
 //SignUp
 export const register = asyncHandler(async (req, res) => {
+  console.log("reached registration");
   const result = await registerUser(req.body);
   return successResponse(res, 200, "OTP send successfully", result.email);
 });

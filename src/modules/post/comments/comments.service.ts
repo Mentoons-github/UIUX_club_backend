@@ -25,7 +25,6 @@ export const getPostCommentService = async ({
     .limit(limit)
     .populate("author", "firstName lastName profilePicture")
     .lean();
-  console.log(mainComments);
 
   const commentsWithReplies = await Promise.all(
     mainComments.map(async (comment) => {
@@ -34,7 +33,7 @@ export const getPostCommentService = async ({
       })
         .sort({ createdAt: -1 })
         .limit(3)
-        .populate("author", "username name avatar")
+        .populate("author", "firstName lastName profilePicture")
         .lean();
 
       return {
@@ -152,15 +151,27 @@ export const getRepliesService = async ({
     .sort({ createdAt: -1 })
     .skip(skip)
     .limit(limit)
-    .populate("author", "username name avatar")
+    .populate("author", "firstName lastName profilePicture")
     .lean();
+
+  const repliesWithCount = await Promise.all(
+    replies.map(async (reply) => ({
+      ...reply,
+      replies: [],
+      repliesCount: await CommentModel.countDocuments({
+        parentComment: reply._id,
+      }),
+    })),
+  );
+
+  console.log("replies : ", repliesWithCount);
 
   const total = await CommentModel.countDocuments({
     parentComment: parentCommentId,
   });
 
   return {
-    replies,
+    replies: repliesWithCount,
     pagination: {
       currentPage: page,
       hasMore: skip + limit < total,

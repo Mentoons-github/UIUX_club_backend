@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 
-const OTPAuthSessionSchema = new mongoose.Schema(
+const otpAuthSessionSchema = new mongoose.Schema(
   {
     email: {
       type: String,
@@ -15,7 +15,7 @@ const OTPAuthSessionSchema = new mongoose.Schema(
 
     purpose: {
       type: String,
-      enum: ["register", "login", "reset-password"],
+      enum: ["register", "login", "reset-password", "employer-register"],
       required: true,
     },
 
@@ -40,12 +40,17 @@ const OTPAuthSessionSchema = new mongoose.Schema(
     password: {
       type: String,
     },
+
+    employerData: {
+      type: Object,
+      default: null,
+    },
   },
   {
     timestamps: true,
   },
 );
 
-OTPAuthSessionSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
-const OTPAuthSessionModel = mongoose.model("AuthSession", OTPAuthSessionSchema);
-export default OTPAuthSessionModel;
+otpAuthSessionSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
+const otpAuthSessionModel = mongoose.model("AuthSession", otpAuthSessionSchema);
+export default otpAuthSessionModel;

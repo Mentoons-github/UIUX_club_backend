@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 
-const PostSchema = new mongoose.Schema(
+const postSchema = new mongoose.Schema(
   {
     author: {
       type: mongoose.Schema.Types.ObjectId,
@@ -31,10 +31,9 @@ const PostSchema = new mongoose.Schema(
     },
     likeCount: { type: Number, default: 0 },
     commentCount: { type: Number, default: 0 },
-    shareCount: { type: Number, default: 0 },
     reportCount: { type: Number, default: 0 },
   },
   { timestamps: true },
 );
-const PostModel = mongoose.model("Post", PostSchema);
+const PostModel = mongoose.model("Post", postSchema);
 export default PostModel;

@@ -1,5 +1,6 @@
 import AppError from "../../../utils/AppError";
 import PostModel from "../post.model";
+import { Post } from "../post.types";
 import LikeModel from "./like.model";
 
 export const likePostService = async ({
@@ -51,4 +52,38 @@ export const dislikePostService = async ({
     console.error(err);
     throw new AppError("Failed to dislike post", 500);
   }
+};
+
+export const hasUserLikedPost = async ({
+  postId,
+  userId,
+}: {
+  postId: string;
+  userId: string;
+}) => {
+  const isLiked = await LikeModel.exists({ post: postId, user: userId });
+
+  return isLiked;
+};
+
+export const getLikedPostIds = async (userId: string) => {
+  const likes = await LikeModel.find({ user: userId }).select("post");
+
+  return new Set(likes.map((l) => l.post.toString()));
+};
+
+export const attachIsLiked = async (posts: Post[], userId?: string) => {
+  if (!userId) {
+    return posts.map((post) => ({
+      ...post,
+      isLiked: false,
+    }));
+  }
+
+  const likedPostIds = await getLikedPostIds(userId);
+
+  return posts.map((post: any) => ({
+    ...post.toObject(),
+    isLiked: likedPostIds.has(post._id.toString()),
+  }));
 };

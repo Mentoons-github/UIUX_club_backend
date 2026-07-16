@@ -4,7 +4,11 @@ import { env } from "../config/env";
 
 export const accessToken = (payload: JwtPayload) => {
   return jwt.sign(
-    { id: payload.id, role: payload.role },
+    {
+      id: payload.id,
+      role: payload.role,
+      permissions: payload.permissions ?? [],
+    },
     env.ACCESS_TOKEN_SECRET as string,
     {
       expiresIn: "15m",
@@ -14,12 +18,15 @@ export const accessToken = (payload: JwtPayload) => {
 
 export const refreshToken = (payload: JwtPayload) => {
   return jwt.sign(
-    { id: payload.id, role: payload.role },
+    {
+      id: payload.id,
+      role: payload.role,
+      permissions: payload.permissions ?? [],
+    },
     env.REFRESH_TOKEN_SECRET as string,
     { expiresIn: "7d" },
   );
 };
-
 export const verifyToken = (token: string) => {
   return jwt.verify(token, env.ACCESS_TOKEN_SECRET!);
 };

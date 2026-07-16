@@ -1,3 +1,4 @@
 export * from "./user.service";
-export * from "./user";
-export * from "./User.model";
+export * from "./user.types";
+export * from "./user.model";
+export { default as userRoutes } from "./user.routes";

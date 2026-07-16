@@ -16,7 +16,7 @@ export interface IBaseOtpRequest {
   purpose: OtpPurpose;
 }
 
-export type JwtPayload = { role: string; id: string };
+export type JwtPayload = { role: string; id: string; permissions?: string[] };
 
 export type RegisterOtpInput = {
   email: string;
@@ -31,13 +31,36 @@ export type ForgotPasswordOtpInput = {
   purpose: "reset-password";
 };
 
-export type SendOtpInput = RegisterOtpInput | ForgotPasswordOtpInput;
-
-export type EnsureAuthSessionInput = {
+export type EmployerRegisterOtpInput = {
   email: string;
-  purpose: "register" | "reset-password";
-  otp: string;
-  firstName?: string;
-  lastName?: string;
-  hashedPassword?: string;
+  firstName: string;
+  lastName: string;
+  purpose: "employer-register";
+  [key: string]: any;
 };
+
+export type SendOtpInput =
+  | RegisterOtpInput
+  | ForgotPasswordOtpInput
+  | EmployerRegisterOtpInput;
+
+export type EnsureAuthSessionInput =
+  | {
+      email: string;
+      purpose: "register";
+      otp: string;
+      firstName?: string;
+      lastName?: string;
+      hashedPassword?: string;
+    }
+  | {
+      email: string;
+      purpose: "employer-register";
+      otp: string;
+      employerData: Record<string, any>;
+    }
+  | {
+      email: string;
+      purpose: "reset-password";
+      otp: string;
+    };

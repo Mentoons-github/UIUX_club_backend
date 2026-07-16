@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 
-const LikeSchema = new mongoose.Schema(
+const likeSchema = new mongoose.Schema(
   {
     user: {
       type: mongoose.Schema.Types.ObjectId,
@@ -16,6 +16,6 @@ const LikeSchema = new mongoose.Schema(
   { timestamps: true },
 );
 
-LikeSchema.index({ user: 1, post: 1 }, { unique: true });
-const LikeModel = mongoose.model("Like", LikeSchema);
+likeSchema.index({ user: 1, post: 1 }, { unique: true });
+const LikeModel = mongoose.model("Like", likeSchema);
 export default LikeModel;

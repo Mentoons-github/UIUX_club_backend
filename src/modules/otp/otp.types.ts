@@ -1,4 +1,8 @@
-export type OtpPurpose = "register" | "login" | "reset-password";
+export type OtpPurpose =
+  | "register"
+  | "reset-password"
+  | "login"
+  | "employer-register";
 
 export interface IOtp {
   email: string;

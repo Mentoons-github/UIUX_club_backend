@@ -1,5 +1,10 @@
-#Node_Modules
+# Node Modules
 node_modules/
 
-#Environment_Variables
+# Environment Variables
 .env
+.env.development
+.env.production
+.env.local
+.env.development.local
+.env.production.local

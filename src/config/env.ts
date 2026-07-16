@@ -1,5 +1,11 @@
 import dotenv from "dotenv";
-dotenv.config();
+
+const envFile =
+  process.env.NODE_ENV === "production"
+    ? ".env.production"
+    : ".env.development";
+
+dotenv.config({ path: envFile });
 
 export const env = {
   //Server
@@ -8,6 +14,7 @@ export const env = {
   ACCESS_TOKEN_SECRET: process.env.ACCESS_TOKEN_SECRET,
   REFRESH_TOKEN_SECRET: process.env.REFRESH_TOKEN_SECRET,
   NODE_ENV: process.env.NODE_ENV,
+  CLIENT_URL: process.env.CLIENT_URL,
 
   //Node mailer
   EMAIL_USER: process.env.EMAIL_USER,

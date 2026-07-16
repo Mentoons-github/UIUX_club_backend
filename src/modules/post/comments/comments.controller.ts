@@ -11,8 +11,6 @@ export const addComment = asyncHandler(async (req, res) => {
   const userId = req.user!.id;
   const { content, postId } = req.body;
 
-  console.log("content :", content, postId);
-
   const comment = await crateNewComment({ userId, content, postId });
   return successResponse(res, 201, "Comment added", comment);
 });
@@ -32,7 +30,6 @@ export const addReply = asyncHandler(async (req, res) => {
 });
 
 export const getPostComments = asyncHandler(async (req, res) => {
-  console.log("reached get comments");
   const postId = req.params.postId as string;
   const { page = 1, limit = 5 } = req.query;
 

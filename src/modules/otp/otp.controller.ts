@@ -6,9 +6,13 @@ import {
   verifyOTP,
 } from "./otp.service";
 import { successResponse } from "../../utils";
-import { issueAuthToken } from "../auth";
+import { issueAuthToken, USER_REFRESH_COOKIE_OPTIONS } from "../auth";
 import { createUser, IUser } from "../user";
 import AppError from "../../utils/AppError";
+import {
+  createEmployerAccount,
+  EMPLOYER_REFRESH_COOKIE_OPTIONS,
+} from "../employer";
 
 export const resendOTP = asyncHandler(async (req, res) => {
   console.log(req.body);
@@ -24,7 +28,7 @@ export const otpVerification = asyncHandler(async (req, res) => {
   const { purpose, email } = req.body;
 
   if (purpose === "register") {
-    const userData: IUser = {
+    const userData = {
       email: session.email,
       firstName: session.firstName!,
       lastName: session.lastName!,
@@ -37,13 +41,11 @@ export const otpVerification = asyncHandler(async (req, res) => {
 
     const tokens = await issueAuthToken(user._id.toString(), "user");
 
-    res.cookie("refreshToken", tokens.refreshToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
-      path: "/api/v1/auth/refresh-token",
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-    });
+    res.cookie(
+      "refreshToken",
+      tokens.refreshToken,
+      USER_REFRESH_COOKIE_OPTIONS,
+    );
 
     return successResponse(res, 200, "OTP verified", {
       user,
@@ -57,6 +59,26 @@ export const otpVerification = asyncHandler(async (req, res) => {
     return successResponse(res, 200, "OTP verified", {
       email,
       message: "You can now reset password",
+    });
+  }
+
+  if (purpose === "employer-register") {
+    const employerData = session.employerData;
+
+    const { employer, accessToken, refreshToken } =
+      await createEmployerAccount(employerData);
+
+    await deleteOTPAuthSession({ email, purpose });
+
+    res.cookie(
+      "employerRefreshToken",
+      refreshToken,
+      EMPLOYER_REFRESH_COOKIE_OPTIONS,
+    );
+
+    return successResponse(res, 200, "OTP verified", {
+      employer,
+      accessToken,
     });
   }
 

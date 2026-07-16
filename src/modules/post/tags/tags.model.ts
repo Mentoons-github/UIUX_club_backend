@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 
-const TagsSchema = new mongoose.Schema(
+const tagsSchema = new mongoose.Schema(
   {
     name: {
       type: String,
@@ -19,5 +19,5 @@ const TagsSchema = new mongoose.Schema(
   { timestamps: true },
 );
 
-const TagsModel = mongoose.model("Tags", TagsSchema);
+const TagsModel = mongoose.model("Tags", tagsSchema);
 export default TagsModel;

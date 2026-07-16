@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 
-const CommentSchema = new mongoose.Schema(
+const commentSchema = new mongoose.Schema(
   {
     post: {
       type: mongoose.Schema.Types.ObjectId,
@@ -27,5 +27,8 @@ const CommentSchema = new mongoose.Schema(
   { timestamps: true },
 );
 
-const CommentModel = mongoose.model("Comment", CommentSchema);
+commentSchema.index({ post: 1, parentComment: 1 });
+commentSchema.index({ parentComment: 1 });
+
+const CommentModel = mongoose.model("Comment", commentSchema);
 export default CommentModel;

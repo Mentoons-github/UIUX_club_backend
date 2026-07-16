@@ -1,4 +1,4 @@
-import User from "../user/User.model";
+import User from "../user/user.model";
 import AppError from "../../utils/AppError";
 import { sendOTP } from "../otp";
 import { accessToken, refreshToken, refreshTokenVerify } from "../../utils/jwt";
@@ -20,6 +20,7 @@ export const registerUser = async (data: IRegisterOtpRequest) => {
 
 export const loginUser = async (email: string, password: string) => {
   const user = await User.findOne({ email });
+  console.log(user);
   if (!user) {
     throw new AppError("Invalid email or password", 401);
   }
