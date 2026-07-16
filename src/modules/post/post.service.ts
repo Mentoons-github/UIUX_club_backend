@@ -5,6 +5,7 @@ import { CreatePostInput } from "./post.types";
 import LikeModel from "./likes/like.model";
 import { attachIsLiked, hasUserLikedPost } from "./likes";
 import { increasePostCount } from "../user";
+import mongoose from "mongoose";
 
 //Owner Posts
 export const getUserPosts = async (userId: string, currentUser?: string) => {
@@ -18,8 +19,6 @@ export const getUserPosts = async (userId: string, currentUser?: string) => {
   return userLikedPosts;
 };
 
-//Upload Posts
-import mongoose from "mongoose";
 
 export const uploadPost = async (postData: CreatePostInput, userId: string) => {
   const session = await mongoose.startSession();
